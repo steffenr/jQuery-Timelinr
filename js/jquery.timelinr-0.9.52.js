@@ -1,5 +1,5 @@
 /* ----------------------------------
-jQuery Timelinr 0.9.5
+jQuery Timelinr 0.9.52
 tested with jQuery v1.6+
 
 Copyright 2011, CSSLab.cl
@@ -12,38 +12,23 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
   $.fn.timelinr = function(options){
     // default plugin settings
     settings = $.extend({
-      // value: horizontal | vertical, default to horizontal
-      orientation: 				'horizontal',
-      // value: any HTML tag or #id, default to #timeline
-      containerDiv: 				'#timeline',
-      // value: any HTML tag or #id, default to #dates
-      datesDiv: 					'#dates',
-      // value: any class, default to selected
-      datesSelectedClass: 		'selected',
+      orientation: 				'horizontal',		// value: horizontal | vertical, default to horizontal
+      containerDiv: 			'#timeline',		// value: any HTML tag or #id, default to #timeline
+      datesDiv: 				'#dates',			// value: any HTML tag or #id, default to #dates
+      datesSelectedClass: 		'selected',			// value: any class, default to selected
       datesSpeed: 				'normal',			// value: integer between 100 and 1000 (recommended) or 'slow', 'normal' or 'fast'; default to normal
-      // value: any HTML tag or #id, default to #issues
-      issuesDiv: 					'#issues',
-      // value: any class, default to selected
-      issuesSelectedClass: 		'selected',
+      issuesDiv: 				'#issues',			// value: any HTML tag or #id, default to #issues
+      issuesSelectedClass: 		'selected',			// value: any class, default to selected
       issuesSpeed: 				'fast',				// value: integer between 100 and 1000 (recommended) or 'slow', 'normal' or 'fast'; default to fast
-      // value: integer between 0 and 1 (recommended), default to 0.2
-      issuesTransparency: 		0.2,
-      // value: integer between 100 and 1000 (recommended), default to 500 (normal)
-      issuesTransparencySpeed: 	500,
-      // value: any HTML tag or #id, default to #prev
-      prevButton: 				'#prev',
-      // value: any HTML tag or #id, default to #next
-      nextButton: 				'#next',
-      // value: true | false, default to false
-      arrowKeys: 					'false',
-      // value: integer, default to 1 (first)
-      startAt: 					1,
-      // value: true | false, default to false
-      autoPlay: 					'false',
-      // value: forward | backward, default to forward
-      autoPlayDirection: 			'forward',
-      autoPlayPause: 				2000				// value: integer (1000 = 1 seg), default to 2000 (2segs)
-		
+      issuesTransparency: 		0.2,				// value: integer between 0 and 1 (recommended), default to 0.2
+      issuesTransparencySpeed: 	500,				// value: integer between 100 and 1000 (recommended), default to 500 (normal)
+      prevButton: 				'#prev',			// value: any HTML tag or #id, default to #prev
+      nextButton: 				'#next',			// value: any HTML tag or #id, default to #next
+      arrowKeys: 				'false',			// value: true | false, default to false
+      startAt: 					1,					// value: integer, default to 1 (first)
+      autoPlay: 				'false',			// value: true | false, default to false
+      autoPlayDirection: 		'forward',			// value: forward | backward, default to forward
+      autoPlayPause: 			2000				// value: integer (1000 = 1 seg), default to 2000 (2segs)
     }, options);
 
     $(function(){
@@ -79,7 +64,6 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
         // first vars
         var whichIssue = $(this).text();
         var currentIndex = $(this).parent().prevAll().length;
-
         // moving the elements
         if(settings.orientation == 'horizontal') {
           $(settings.issuesDiv).animate({
@@ -102,7 +86,16 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
           queue:false, 
           duration:settings.issuesSpeed
           }).removeClass(settings.issuesSelectedClass).eq(currentIndex).addClass(settings.issuesSelectedClass).fadeTo(settings.issuesTransparencySpeed,1);
-			
+        // prev/next buttons now disappears on first/last issue
+        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.prevButton).fadeOut('fast');
+        } 
+        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.nextButton).fadeOut('fast');
+        }
+        else {
+          $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
+        }
         // now moving the dates
         $(settings.datesDiv+' a').removeClass(settings.datesSelectedClass);
         $(this).addClass(settings.datesSelectedClass);
@@ -121,6 +114,7 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
             duration:'settings.datesSpeed'
           });
         }
+			
       });
 
       $(settings.nextButton).bind('click', function(event){
@@ -189,6 +183,16 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
               $(settings.datesDiv+' a.'+settings.datesSelectedClass).removeClass(settings.datesSelectedClass).parent().next().children().addClass(settings.datesSelectedClass);
             }
           }
+        }
+        // prev/next buttons now disappears on first/last issue
+        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.prevButton).fadeOut('fast');
+        } 
+        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.nextButton).fadeOut('fast');
+        }
+        else {
+          $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
         }
       });
 
@@ -262,6 +266,16 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
             }
           }
         }
+        // prev/next buttons now disappears on first/last issue
+        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.prevButton).fadeOut('fast');
+        } 
+        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
+          $(settings.nextButton).fadeOut('fast');
+        }
+        else {
+          $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
+        }
       });
 		
       // keyboard navigation, added since 0.9.1
@@ -294,6 +308,7 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
       if(settings.autoPlay == 'true') { 
         setInterval("autoPlay()", settings.autoPlayPause);
       }
+		
     });
 
   };
