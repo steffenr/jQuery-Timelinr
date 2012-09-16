@@ -15,7 +15,7 @@ Configuration:
 Include the jQuery library and this plugin:
 
 	<script src="js/jquery-1.6.1.min.js"></script>
-	<script src="js/jquery.timelinr-0.9.js"></script>
+	<script src="js/jquery.timelinr-0.9.5.js"></script>
 
 Inicialize-it with the default parameters:
 
@@ -65,12 +65,12 @@ Or configure it as preferred:
 
 HTML markup must be as follows:
 
-	<div id="timeline">
-	   <ul id="dates">
+	<div id="timeline" class="timelinr-container">
+	   <ul id="dates" class="timelinr-dates">
 	      <li><a href="#">date1</a></li>
 	      <li><a href="#">date2</a></li>
 	   </ul>
-	   <ul id="issues">
+	   <ul id="issues" class="timelinr-issues">
 	      <li id="date1">
 	         <p>Lorem ipsum.</p>
 	      </li>
@@ -78,6 +78,6 @@ HTML markup must be as follows:
 	         <p>Lorem ipsum.</p>
 	      </li>
 	   </ul>
-	   <a href="#" id="next">+</a> <!-- optional -->
-	   <a href="#" id="prev">-</a> <!-- optional -->
+	   <a href="#" id="next" class="timelinr-prev">+</a> <!-- optional -->
+	   <a href="#" id="prev" class="timelinr-next">-</a> <!-- optional -->
 	</div>
