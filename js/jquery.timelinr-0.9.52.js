@@ -12,7 +12,7 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
   $.fn.timelinr = function(options){
     // default plugin settings
     settings = $.extend({
-      orientation: 				'vertical',		// value: horizontal | vertical, default to horizontal
+      orientation: 				'horizontal',		// value: horizontal | vertical, default to horizontal
       containerDiv: 			'#timeline',		// value: any HTML tag or #id, default to #timeline
       datesDiv: 				'#dates',			// value: any HTML tag or #id, default to #dates
       datesSelectedClass: 		'selected',			// value: any class, default to selected
