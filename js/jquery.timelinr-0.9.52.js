@@ -12,7 +12,7 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
   $.fn.timelinr = function(options){
     // default plugin settings
     settings = $.extend({
-      orientation: 				'horizontal',		// value: horizontal | vertical, default to horizontal
+      orientation: 				'vertical',		// value: horizontal | vertical, default to horizontal
       containerDiv: 			'#timeline',		// value: any HTML tag or #id, default to #timeline
       datesDiv: 				'#dates',			// value: any HTML tag or #id, default to #dates
       datesSelectedClass: 		'selected',			// value: any class, default to selected
@@ -33,302 +33,157 @@ instructions: http://www.csslab.cl/2011/08/18/jquery-timelinr/
 
     $(function(){
       // setting variables... many of them
-      var howManyDates = $(settings.datesDiv+' li').length;
-      var howManyIssues = $(settings.issuesDiv+' li').length;
-      var currentDate = $(settings.datesDiv).find('a.'+settings.datesSelectedClass);
-      var currentIssue = $(settings.issuesDiv).find('li.'+settings.issuesSelectedClass);
-      var widthContainer = $(settings.containerDiv).width();
-      var heightContainer = $(settings.containerDiv).height();
-      var widthIssues = $(settings.issuesDiv).width();
-      var heightIssues = $(settings.issuesDiv).height();
-      var widthIssue = $(settings.issuesDiv+' li').width();
-      var heightIssue = $(settings.issuesDiv+' li').height();
-      var widthDates = $(settings.datesDiv).width();
-      var heightDates = $(settings.datesDiv).height();
-      var widthDate = $(settings.datesDiv+' li').width();
-      var heightDate = $(settings.datesDiv+' li').height();
-		
-      // set positions!
-      if(settings.orientation == 'horizontal') {	
-        $(settings.issuesDiv).width(widthIssue*howManyIssues);
-        $(settings.datesDiv).width(widthDate*howManyDates).css('marginLeft',widthContainer/2-widthDate/2);
-        var defaultPositionDates = parseInt($(settings.datesDiv).css('marginLeft').substring(0,$(settings.datesDiv).css('marginLeft').indexOf('px')));
-      } else if(settings.orientation == 'vertical') {
-        $(settings.issuesDiv).height(heightIssue*howManyIssues);
-        $(settings.datesDiv).height(heightDate*howManyDates).css('marginTop',heightContainer/2-heightDate/2);
-        var defaultPositionDates = parseInt($(settings.datesDiv).css('marginTop').substring(0,$(settings.datesDiv).css('marginTop').indexOf('px')));
+      var currentIndex = $(settings.datesDiv).find('a.'+settings.datesSelectedClass).index();
+      var howMany
+      var sizeIssue;
+      var sizeDate;
+      var margin;
+      var animateIssuesSettings = {queue:false, duration:settings.issuesSpeed};
+      var animateDatesSettings = {queue:false, duration:settings.datesSpeed};
+      var animationData = {};
+      var keys
+      setup();
+      var defaultPositionDates = parseInt($(settings.datesDiv).css(margin).substring(0,$(settings.datesDiv).css(margin).indexOf('px')));
+      if (settings.autoPlay == 'true') {
+        if (settings.autoPlayDirection == 'forward') {
+          var autoPlayStep = 1;
+        }
+        else if (settings.autoPlayDirection == 'backward') {
+          var autoPlayStep = 1;
+        }
       }
-		
-      $(settings.datesDiv+' a').click(function(event){
+
+      function setup() {
+        //This is a separate function to keep a few variables from polluting
+        //the namespace.
+        howMany = $(settings.datesDiv+' li').length;
+        var howManyIssues = $(settings.issuesDiv+' li').length;
+        if (howMany > howManyIssues){
+            howMany = howManyIssues;
+        }
+        //Variables that depend on the orientation
+        if(settings.orientation == 'horizontal') {
+          var sizeContainer = $(settings.containerDiv).width();
+          sizeIssue = $(settings.issuesDiv+' li').width();
+          sizeDate = $(settings.datesDiv+' li').width();
+          margin = 'marginLeft';
+          $(settings.issuesDiv).width(sizeIssue*howMany);
+          $(settings.datesDiv).width(sizeDate*howMany).css(margin,sizeContainer/2-sizeDate/2);
+          keys = {next: 39, prev: 37};
+        }
+        else if(settings.orientation == 'vertical') {
+          var sizeContainer = $(settings.containerDiv).height();
+          sizeIssue = $(settings.issuesDiv+' li').height();
+          sizeDate = $(settings.datesDiv+' li').height();
+          margin = 'marginTop';
+          $(settings.issuesDiv).height(sizeIssue*howMany);
+          $(settings.datesDiv).height(sizeDate*howMany).css(margin,sizeContainer/2-sizeDate/2);
+          keys = {next: 40, prev: 38};
+        }
+      }
+
+      $(settings.datesDiv).delegate(' a', "click", function(event){
         event.preventDefault();
-        // first vars
-        var whichIssue = $(this).text();
-        var currentIndex = $(this).parent().prevAll().length;
-        // moving the elements
-        if(settings.orientation == 'horizontal') {
-          $(settings.issuesDiv).animate({
-            'marginLeft':-widthIssue*currentIndex
-            },{
-            queue:false, 
-            duration:settings.issuesSpeed
-            });
-        } else if(settings.orientation == 'vertical') {
-          $(settings.issuesDiv).animate({
-            'marginTop':-heightIssue*currentIndex
-            },{
-            queue:false, 
-            duration:settings.issuesSpeed
-            });
-        }
-        $(settings.issuesDiv+' li').animate({
-          'opacity':settings.issuesTransparency
-          },{
-          queue:false, 
-          duration:settings.issuesSpeed
-          }).removeClass(settings.issuesSelectedClass).eq(currentIndex).addClass(settings.issuesSelectedClass).fadeTo(settings.issuesTransparencySpeed,1);
-        // prev/next buttons now disappears on first/last issue
-        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
-          $(settings.prevButton).fadeOut('fast');
-        } 
-        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
-          $(settings.nextButton).fadeOut('fast');
-        }
-        else {
-          $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
-        }
-        // now moving the dates
-        $(settings.datesDiv+' a').removeClass(settings.datesSelectedClass);
-        $(this).addClass(settings.datesSelectedClass);
-        if(settings.orientation == 'horizontal') {
-          $(settings.datesDiv).animate({
-            'marginLeft':defaultPositionDates-(widthDate*currentIndex)
-            },{
-            queue:false, 
-            duration:'settings.datesSpeed'
-          });
-        } else if(settings.orientation == 'vertical') {
-          $(settings.datesDiv).animate({
-            'marginTop':defaultPositionDates-(heightDate*currentIndex)
-            },{
-            queue:false, 
-            duration:'settings.datesSpeed'
-          });
-        }
-			
+        currentIndex = $(this).parent().index();
+        moveTimelinr();
       });
 
       $(settings.nextButton).bind('click', function(event){
         event.preventDefault();
-        if(settings.orientation == 'horizontal') {
-          var currentPositionIssues = parseInt($(settings.issuesDiv).css('marginLeft').substring(0,$(settings.issuesDiv).css('marginLeft').indexOf('px')));
-          var currentIssueIndex = currentPositionIssues/widthIssue;
-          var currentPositionDates = parseInt($(settings.datesDiv).css('marginLeft').substring(0,$(settings.datesDiv).css('marginLeft').indexOf('px')));
-          var currentIssueDate = currentPositionDates-widthDate;
-          if(currentPositionIssues <= -(widthIssue*howManyIssues-(widthIssue))) {
-            $(settings.issuesDiv).stop();
-            $(settings.datesDiv+' li:last-child a').click();
-          } else {
-            if (!$(settings.issuesDiv).is(':animated')) {
-              $(settings.issuesDiv).animate({
-                'marginLeft':currentPositionIssues-widthIssue
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li').animate({
-                'opacity':settings.issuesTransparency
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li.'+settings.issuesSelectedClass).removeClass(settings.issuesSelectedClass).next().fadeTo(settings.issuesTransparencySpeed, 1).addClass(settings.issuesSelectedClass);
-              $(settings.datesDiv).animate({
-                'marginLeft':currentIssueDate
-              },{
-                queue:false, 
-                duration:'settings.datesSpeed'
-              });
-              $(settings.datesDiv+' a.'+settings.datesSelectedClass).removeClass(settings.datesSelectedClass).parent().next().children().addClass(settings.datesSelectedClass);
-            }
-          }
-        } else if(settings.orientation == 'vertical') {
-          var currentPositionIssues = parseInt($(settings.issuesDiv).css('marginTop').substring(0,$(settings.issuesDiv).css('marginTop').indexOf('px')));
-          var currentIssueIndex = currentPositionIssues/heightIssue;
-          var currentPositionDates = parseInt($(settings.datesDiv).css('marginTop').substring(0,$(settings.datesDiv).css('marginTop').indexOf('px')));
-          var currentIssueDate = currentPositionDates-heightDate;
-          if(currentPositionIssues <= -(heightIssue*howManyIssues-(heightIssue))) {
-            $(settings.issuesDiv).stop();
-            $(settings.datesDiv+' li:last-child a').click();
-          } else {
-            if (!$(settings.issuesDiv).is(':animated')) {
-              $(settings.issuesDiv).animate({
-                'marginTop':currentPositionIssues-heightIssue
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li').animate({
-                'opacity':settings.issuesTransparency
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li.'+settings.issuesSelectedClass).removeClass(settings.issuesSelectedClass).next().fadeTo(settings.issuesTransparencySpeed, 1).addClass(settings.issuesSelectedClass);
-              $(settings.datesDiv).animate({
-                'marginTop':currentIssueDate
-              },{
-                queue:false, 
-                duration:'settings.datesSpeed'
-              });
-              $(settings.datesDiv+' a.'+settings.datesSelectedClass).removeClass(settings.datesSelectedClass).parent().next().children().addClass(settings.datesSelectedClass);
-            }
-          }
-        }
-        // prev/next buttons now disappears on first/last issue
-        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
-          $(settings.prevButton).fadeOut('fast');
-        } 
-        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
-          $(settings.nextButton).fadeOut('fast');
+        if(currentIndex >= howMany-1) {
+          // Prevents going past the last date by clicking too quickly
+          $(settings.issuesDiv).stop();
+          $(settings.datesDiv).stop();
+          $(settings.datesDiv+' li:last-child a').click();
         }
         else {
-          $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
+          currentIndex += 1;
+          moveTimelinr();
         }
       });
 
       $(settings.prevButton).click(function(event){
         event.preventDefault();
-        if(settings.orientation == 'horizontal') {
-          var currentPositionIssues = parseInt($(settings.issuesDiv).css('marginLeft').substring(0,$(settings.issuesDiv).css('marginLeft').indexOf('px')));
-          var currentIssueIndex = currentPositionIssues/widthIssue;
-          var currentPositionDates = parseInt($(settings.datesDiv).css('marginLeft').substring(0,$(settings.datesDiv).css('marginLeft').indexOf('px')));
-          var currentIssueDate = currentPositionDates+widthDate;
-          if(currentPositionIssues >= 0) {
-            $(settings.issuesDiv).stop();
-            $(settings.datesDiv+' li:first-child a').click();
-          } else {
-            if (!$(settings.issuesDiv).is(':animated')) {
-              $(settings.issuesDiv).animate({
-                'marginLeft':currentPositionIssues+widthIssue
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li').animate({
-                'opacity':settings.issuesTransparency
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li.'+settings.issuesSelectedClass).removeClass(settings.issuesSelectedClass).prev().fadeTo(settings.issuesTransparencySpeed, 1).addClass(settings.issuesSelectedClass);
-              $(settings.datesDiv).animate({
-                'marginLeft':currentIssueDate
-              },{
-                queue:false, 
-                duration:'settings.datesSpeed'
-              });
-              $(settings.datesDiv+' a.'+settings.datesSelectedClass).removeClass(settings.datesSelectedClass).parent().prev().children().addClass(settings.datesSelectedClass);
-            }
-          }
-        } else if(settings.orientation == 'vertical') {
-          var currentPositionIssues = parseInt($(settings.issuesDiv).css('marginTop').substring(0,$(settings.issuesDiv).css('marginTop').indexOf('px')));
-          var currentIssueIndex = currentPositionIssues/heightIssue;
-          var currentPositionDates = parseInt($(settings.datesDiv).css('marginTop').substring(0,$(settings.datesDiv).css('marginTop').indexOf('px')));
-          var currentIssueDate = currentPositionDates+heightDate;
-          if(currentPositionIssues >= 0) {
-            $(settings.issuesDiv).stop();
-            $(settings.datesDiv+' li:first-child a').click();
-          } else {
-            if (!$(settings.issuesDiv).is(':animated')) {
-              $(settings.issuesDiv).animate({
-                'marginTop':currentPositionIssues+heightIssue
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li').animate({
-                'opacity':settings.issuesTransparency
-                },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.issuesDiv+' li.'+settings.issuesSelectedClass).removeClass(settings.issuesSelectedClass).prev().fadeTo(settings.issuesTransparencySpeed, 1).addClass(settings.issuesSelectedClass);
-              $(settings.datesDiv).animate({
-                'marginTop':currentIssueDate
-              },{
-                queue:false, 
-                duration:'settings.datesSpeed'
-              },{
-                queue:false, 
-                duration:settings.issuesSpeed
-                });
-              $(settings.datesDiv+' a.'+settings.datesSelectedClass).removeClass(settings.datesSelectedClass).parent().prev().children().addClass(settings.datesSelectedClass);
-            }
-          }
+        if(currentIndex <= 0) {
+          // Prevents going past the first date by clicking too quickly
+          $(settings.issuesDiv).stop();
+          $(settings.datesDiv).stop();
+          $(settings.datesDiv+' li:first-child a').click();
         }
-        // prev/next buttons now disappears on first/last issue
-        if( $(settings.issuesDiv+' li:first-child').hasClass(settings.issuesSelectedClass) ) {
+        else {
+          currentIndex -= 1;
+          moveTimelinr();
+        }
+      });
+
+      function moveTimelinr() {
+        // moving the issues
+        animationData[margin] = -sizeIssue*currentIndex;
+        $(settings.issuesDiv).animate(animationData, animateIssuesSettings);
+        var issues = $(settings.issuesDiv+' li');
+        issues.animate({'opacity':settings.issuesTransparency}, animateIssuesSettings);
+        issues.removeClass(settings.issuesSelectedClass);
+        var issue = issues.eq(currentIndex);
+        issue.addClass(settings.issuesSelectedClass);
+        issue.fadeTo(settings.issuesTransparencySpeed,1);
+        // now moving the dates
+        var dates = $(settings.datesDiv+' a')
+        dates.removeClass(settings.datesSelectedClass);
+        dates.eq(currentIndex).addClass(settings.datesSelectedClass);
+        animationData[margin] = defaultPositionDates-(sizeDate*currentIndex);
+        $(settings.datesDiv).animate(animationData, animateDatesSettings);
+        hideButtons();
+      }
+
+      function hideButtons() {
+        // prev/next buttons should disappear on first/last issue
+        if( currentIndex == 0 ) {
           $(settings.prevButton).fadeOut('fast');
-        } 
-        else if( $(settings.issuesDiv+' li:last-child').hasClass(settings.issuesSelectedClass) ) {
+        }
+        else if( currentIndex == howMany-1 ) {
           $(settings.nextButton).fadeOut('fast');
         }
         else {
           $(settings.nextButton+','+settings.prevButton).fadeIn('slow');
         }
-      });
-		
+      }
+
       // keyboard navigation, added since 0.9.1
       if(settings.arrowKeys=='true') {
-        if(settings.orientation=='horizontal') {
-          $(document).keydown(function(event){
-            if (event.keyCode == 39) { 
-              $(settings.nextButton).click();
-            }
-            if (event.keyCode == 37) { 
-              $(settings.prevButton).click();
-            }
-          });
-        } else if(settings.orientation=='vertical') {
-          $(document).keydown(function(event){
-            if (event.keyCode == 40) { 
-              $(settings.nextButton).click();
-            }
-            if (event.keyCode == 38) { 
-              $(settings.prevButton).click();
-            }
-          });
-        }
+        $(document).keydown(function(event){
+          if (event.keyCode == keys.next) {
+            $(settings.nextButton).click();
+          }
+          if (event.keyCode == keys.prev) {
+            $(settings.prevButton).click();
+          }
+        });
       }
-		
+
       // default position startAt, added since 0.9.3
-      $(settings.datesDiv+' li').eq(settings.startAt-1).find('a').trigger('click');
-		
+      if (currentIndex == -1){
+        currentIndex = settings.startAt-1
+        $(settings.datesDiv+' li').eq(currentIndex).find('a').trigger('click');
+      }
+
       // autoPlay, added since 0.9.4
-      if(settings.autoPlay == 'true') { 
+      if(settings.autoPlay == 'true') {
         setInterval("autoPlay()", settings.autoPlayPause);
       }
-		
+
     });
 
   };
 
   // autoPlay, added since 0.9.4
   function autoPlay(){
-    var currentDate = $(settings.datesDiv).find('a.'+settings.datesSelectedClass);
-    if(settings.autoPlayDirection == 'forward') {
-      if(currentDate.parent().is('li:last-child')) {
-        $(settings.datesDiv+' li:first-child').find('a').trigger('click');
-      } else {
-        currentDate.parent().next().find('a').trigger('click');
-      }
-    } else if(settings.autoPlayDirection == 'backward') {
-      if(currentDate.parent().is('li:first-child')) {
-        $(settings.datesDiv+' li:last-child').find('a').trigger('click');
-      } else {
-        currentDate.parent().prev().find('a').trigger('click');
-      }
+    currentIndex += autoPlayStep;
+    if(currentIndex >= howMany) {
+      currentIndex = 0;
+    } else if(currentIndex < 0) {
+      currentIndex = howMany - 1;
     }
+    moveTimelinr();
   }
-  
+
 })(jQuery);
